@@ -1200,6 +1200,16 @@ reg add "HKLM\SOFTWARE\Policies\Microsoft\FVE" /v "RequireTPM" /t REG_DWORD /d 0
 $SecureString = ConvertTo-SecureString "1234" -AsPlainText -Force
 Enable-BitLocker -MountPoint "C:" -EncryptionMethod Aes256 -UsedSpaceOnly -Pin $SecureString -TPMandPinProtector
 
+BCDEDIT /set "{current}" nx OptOut
+Set-Processmitigation -System -Enable DEP
+Set-SmbServerConfiguration –EncryptData $true
+Set-SmbServerConfiguration –RejectUnencryptedAccess $false
+Set-MpPreference -DisableRemovableDriveScanning 0
+Set-MpPreference -EnableFileHashComputation 1
+Set-MpPreference -DisableIntrusionPreventionSystem $false
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Type DWord -Value 0
+
+
 
 
 
