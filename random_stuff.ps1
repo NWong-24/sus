@@ -1097,6 +1097,8 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\XblGameSave" -Na
 New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\XboxNetApiSvc" -Name "Start" -Value 4
 Set-ExecutionPolicy Bypass -Scope Process
 
+
+#unchecked code, no time to test
 $result = Get-ChildItem 'HKLM:\SYSTEM\CurrentControlSet\Services'
 $ServiceItems = $result | Foreach-Object {Get-ItemProperty $_.PsPath}
 # Iterate through the keys and check for Unquoted ImagePath's
@@ -1193,6 +1195,11 @@ ForEach ($si in $ServiceItems) {
 	}
 }	
 # https://github.com/NetSecJedi/FixUnquotedPaths/blob/master/FixUnquotedPaths.ps1
+
+reg add "HKLM\SOFTWARE\Policies\Microsoft\FVE" /v "RequireTPM" /t REG_DWORD /d 0 /f
+$SecureString = ConvertTo-SecureString "1234" -AsPlainText -Force
+Enable-BitLocker -MountPoint "C:" -EncryptionMethod Aes256 -UsedSpaceOnly -Pin $SecureString -TPMandPinProtector
+
 
 
 
