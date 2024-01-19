@@ -1202,12 +1202,14 @@ Enable-BitLocker -MountPoint "C:" -EncryptionMethod Aes256 -UsedSpaceOnly -Pin $
 
 BCDEDIT /set "{current}" nx OptOut
 Set-Processmitigation -System -Enable DEP
-Set-SmbServerConfiguration –EncryptData $true
-Set-SmbServerConfiguration –RejectUnencryptedAccess $false
 Set-MpPreference -DisableRemovableDriveScanning 0
 Set-MpPreference -EnableFileHashComputation 1
 Set-MpPreference -DisableIntrusionPreventionSystem $false
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Type DWord -Value 0
+reg add "HKLM\Software\Policies\Microsoft\Windows\Personalization" /v "NoLockScreenCamera" /t REG_DWORD /d 1 /f
+reg add "HKLM\Software\Policies\Microsoft\Windows\Personalization" /v "NoLockScreenSlideshow" /t REG_DWORD /d 1 /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "AllowOnlineTips" /t REG_DWORD /d 0 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Print" /v "RpcAuthnLevelPrivacyEnabled" /t REG_DWORD /d 1 /f
 
 
 
