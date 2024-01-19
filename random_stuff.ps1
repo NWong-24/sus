@@ -33,8 +33,8 @@ Write-Output "BEGINING EXECUTION OF SCRIPT TO HARDEN A WINDOWS 10 MACHINE NOT JO
 # WDIGEST CACHE
 Write-Output "[*] Disabling WDigest credentials caching. More info here: https://www.stigviewer.com/stig/windows_10/2017-02-21/finding/V-71763"
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\Wdigest" -Name UseLogonCredential -Value 0 -Force
-
-
+ipconfig /flushdns
+sc.exe config RemoteRegistry start= disabled
 # AUTOLOGIN PASSWORD
 $AutoLoginPassword = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\Currentversion\Winlogon" | Select-Object -Property "DefaultUserName","DefaultPassword"
 If (($AutoLoginPassword).DefaultPassword) {
