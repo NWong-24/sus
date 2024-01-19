@@ -11,7 +11,6 @@ powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/H
 powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_cis_microsoft_windows_server_2022_22h2_2.0.0_machine.csv -OutFile finding_list_cis_microsoft_windows_server_2022_22h2_2.csv
 powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_cis_microsoft_windows_10_enterprise_22h2_machine.csv -OutFile finding_list_cis_microsoft_windows_10_enterprise_22h2_machine.csv
 
-
 If ((Test-Admin) -eq $False) {
 
     If ($Elevated) {
@@ -62,7 +61,7 @@ Else {
 
 }  # End Else
 
-<#
+
 # ALWAYS INSTALL ELEVATED
 If (((Get-ItemProperty "HKLM:\Software\Policies\Microsoft\Windows\Installer").AlwaysInstallElevated) -eq 1) {
 
@@ -76,11 +75,6 @@ Else {
     Write-Output "[*] EXCELLENT: Target is not vulnerable to AlwaysInstallElevated PrivEsc method "
 
 }  # End Else
-#>
-
-
-
-
 
 # WSUS
 Write-Output "[*] Checking for WSUS updates allowed over HTTP for PrivEsc"
