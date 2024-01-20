@@ -4,12 +4,12 @@ Function Test-Admin {
     $CurrentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
 
 }  # End Function Test-Admin
-
-powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/0x6d69636b/windows_hardening/master/HardeningKitty.psm1 -OutFile HardeningKitty.psm1
-powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/0x6d69636b/windows_hardening/master/HardeningKitty.psd1 -OutFile HardeningKitty.psd1
-powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_0x6d69636b_machine.csv -OutFile finding_list_0x6d69636b_machine.csv
-powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_cis_microsoft_windows_server_2022_22h2_2.0.0_machine.csv -OutFile finding_list_cis_microsoft_windows_server_2022_22h2_2.csv
-powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_cis_microsoft_windows_10_enterprise_22h2_machine.csv -OutFile finding_list_cis_microsoft_windows_10_enterprise_22h2_machine.csv
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/0x6d69636b/windows_hardening/master/HardeningKitty.psm1 -OutFile HardeningKitty.psm1
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/0x6d69636b/windows_hardening/master/HardeningKitty.psd1 -OutFile HardeningKitty.psd1
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_0x6d69636b_machine.csv -OutFile finding_list_0x6d69636b_machine.csv
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_cis_microsoft_windows_server_2022_22h2_2.0.0_machine.csv -OutFile finding_list_cis_microsoft_windows_server_2022_22h2_2.csv
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_cis_microsoft_windows_10_enterprise_22h2_machine.csv -OutFile finding_list_cis_microsoft_windows_10_enterprise_22h2_machine.csv
 
 If ((Test-Admin) -eq $False) {
 
@@ -222,7 +222,7 @@ New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server' -Name 'DisabledByDefault' -Value '0' -PropertyType 'DWord' -Force | Out-Null
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client' -Name 'DisabledByDefault' -Value '0' -PropertyType 'DWord' -Force | Out-Null
 
-
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 # POWERSHELL DOWNGRADE
 Write-Output "[*] Removing outdated PowerShell version 2"
 Disable-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2Root -Remove
@@ -587,7 +587,7 @@ Set-NetFirewallProfile -All -AllowUnicastResponseToMulticast True
 
 $password123 = "password123"
 $securePassword = ConvertTo-SecureString -String $password123 -AsPlainText -Force
-Get-ADUser | Set-ADAccountPassword -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "password123" -Force)
+Get-ADUser -Filter * | Set-ADAccountPassword -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "password123" -Force)
 net accounts /minpwlen:14
 net accounts /maxpwage:59
 net accounts /minpwage:2
@@ -972,11 +972,12 @@ powershell.exe -command "Get-ScheduledTask DmClient | Disable-ScheduledTask"
 powershell.exe -command "Get-ScheduledTask DmClientOnScenarioDownload | Disable-ScheduledTask"
 powershell.exe -command "Set-WinLanguageBarOption -UseLegacyLanguageBar"
 #https://gist.github.com/ricardojba/ecdfe30dadbdab6c514a530bc5d51ef6
-powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/gunnarhaslinger/Windows-Defender-Exploit-Guard-Configuration/master/Windows10-v2104_ExploitGuard-Security-Baseline.xml -OutFile ProcessMitigation.xml
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/gunnarhaslinger/Windows-Defender-Exploit-Guard-Configuration/master/Windows10-v2104_ExploitGuard-Security-Baseline.xml -OutFile ProcessMitigation.xml
 powershell.exe -Command "Set-ProcessMitigation -PolicyFilePath ProcessMitigation.xml"
 del ProcessMitigation.xml
-powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/gunnarhaslinger/Windows-Defender-Exploit-Guard-Configuration/master/Windows10-v2104_ExploitGuard-Security-Baseline.xml -OutFile ProcessMitigation.xml
-powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/NWong-24/sus/main/secpol.cfg -OutFile secpol.cfg
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/gunnarhaslinger/Windows-Defender-Exploit-Guard-Configuration/master/Windows10-v2104_ExploitGuard-Security-Baseline.xml -OutFile ProcessMitigation.xml
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/NWong-24/sus/main/secpol.cfg -OutFile secpol.cfg
 powershell.exe -command "secedit /configure /db C:\Windows\security\local.sdb /cfg secpol.cfg /areas SECURITYPOLICY"
 del secpol.cfg
 bcdedit.exe /set '{current}' nx AlwaysOn
@@ -988,11 +989,13 @@ reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" /v Scheduled
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" /v RescheduleWaitTime /t REG_DWORD /d 10 /f
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" /v NoAutoRebootWithLoggedOnUsers /t REG_DWORD /d 0 /f
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" /v UseWUServer /t REG_DWORD /d 0 /f
-powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/0x6d69636b/windows_hardening/master/HardeningKitty.psm1 -OutFile HardeningKitty.psm1
-powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/0x6d69636b/windows_hardening/master/HardeningKitty.psd1 -OutFile HardeningKitty.psd1
-powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_0x6d69636b_machine.csv -OutFile finding_list_0x6d69636b_machine.csv
-powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_cis_microsoft_windows_server_2022_22h2_2.0.0_machine.csv -OutFile finding_list_cis_microsoft_windows_server_2022_22h2_2.csv
-powershell.exe Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_cis_microsoft_windows_10_enterprise_22h2_machine.csv -OutFile finding_list_cis_microsoft_windows_10_enterprise_22h2_machine.csv
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/0x6d69636b/windows_hardening/master/HardeningKitty.psm1 -OutFile HardeningKitty.psm1
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/0x6d69636b/windows_hardening/master/HardeningKitty.psd1 -OutFile HardeningKitty.psd1
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_0x6d69636b_machine.csv -OutFile finding_list_0x6d69636b_machine.csv
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_cis_microsoft_windows_server_2022_22h2_2.0.0_machine.csv -OutFile finding_list_cis_microsoft_windows_server_2022_22h2_2.csv
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/scipag/HardeningKitty/master/lists/finding_list_cis_microsoft_windows_10_enterprise_22h2_machine.csv -OutFile finding_list_cis_microsoft_windows_10_enterprise_22h2_machine.csv
+
 
 Import-Module .\HardeningKitty.psm1
 
@@ -1047,150 +1050,148 @@ Add-MpPreference -AttackSurfaceReductionRules_Ids 7674ba52-37eb-4a4f-a9a1-f0f9a1
 Add-MpPreference -AttackSurfaceReductionRules_Ids e6db77e5-3df2-4cf1-b95a-636979351e5b -AttackSurfaceReductionRules_Actions Enabled
 netsh int tcp set global timestamps=disabled
 reg add "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" /v "EnableMulticast" /t DWord /d 0 /f
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\BTAGService" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\bthserv" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Browser" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\MapsBroker" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\lfsvc" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\IISADMIN" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\irmon" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\SharedAccess" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\lltdsvc" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LxssManager" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\FTPSVC" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\MSiSCSI" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\sshd" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\PNRPsvc" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\p2psvc" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\PNRPAutoReg" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\PNRPsvc" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Spooler" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\wercplsupport" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\RasAuto" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\SessionEnv" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\TermService" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\UmRdpService" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\RpcLocator" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\RemoteRegistry" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\RemoteAccess" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\simptcp" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\SNMP" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\sacsvr" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\SSDPSRV" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\upnphost" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\WMSvc" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\WerSvc" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Wecsvc" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\WMPNetworkSvc" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\icssvc" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\WpnService" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\PushToInstall" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\WinRM" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W3SVC" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\XboxGipSvc" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\XblAuthManager" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\XblGameSave" -Name "Start" -Value 4
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\XboxNetApiSvc" -Name "Start" -Value 4
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\BTAGService" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\bthserv" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\Browser" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\MapsBroker" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\lfsvc" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\IISADMIN" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\irmon" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\SharedAccess" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\lltdsvc" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\LxssManager" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\FTPSVC" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\MSiSCSI" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\sshd" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\PNRPsvc" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\p2psvc" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\PNRPAutoReg" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\PNRPsvc" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\Spooler" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\wercplsupport" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\RasAuto" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\SessionEnv" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TermService" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\UmRdpService" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\RpcLocator" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\RemoteRegistry" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\RemoteAccess" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\simptcp" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\SNMP" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\sacsvr" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\SSDPSRV" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\upnphost" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\WMSvc" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\WerSvc" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\Wecsvc" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\WMPNetworkSvc" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\icssvc" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\WpnService" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\PushToInstall" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\WinRM" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\W3SVC" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\XboxGipSvc" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\XblAuthManager" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\XblGameSave" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\XboxNetApiSvc" /v Start /t REG_DWORD /d 4 /f
 Set-ExecutionPolicy Bypass -Scope Process
-
-
 #unchecked code, no time to test
 $result = Get-ChildItem 'HKLM:\SYSTEM\CurrentControlSet\Services'
 $ServiceItems = $result | Foreach-Object {Get-ItemProperty $_.PsPath}
 # Iterate through the keys and check for Unquoted ImagePath's
 ForEach ($si in $ServiceItems) {
-	if ($si.ImagePath -ne $nul) { 
-		$obj = New-Object -Typename PSObject
-		$obj | Add-Member -MemberType NoteProperty -Name Status -Value "Retrieved"
-		# There is certianly a way to use the full path here but for now I trim it until I can find time to play with it
-        	$obj | Add-Member -MemberType NoteProperty -Name Key -Value $si.PSPath.TrimStart("Microsoft.PowerShell.Core\Registry::")
-        	$obj | Add-Member -MemberType NoteProperty -Name ImagePath -Value $si.ImagePath
-		
-		########################################################################
-    		# Find and Fix Bad Keys for each key object
-    		########################################################################
-		
-		#We're looking for keys with spaces in the path and unquoted
-		$examine = $obj.ImagePath
-		if (!($examine.StartsWith('"'))) { #Doesn't start with a quote
-			if (!($examine.StartsWith("\??"))) { #Some MS Services start with this but don't appear vulnerable
-				if ($examine.contains(" ")) { #If contains space
-					#when I get here, I can either have a good path with arguments, or a bad path
-					if ($examine.contains("-") -or $examine.contains("/")) { #found arguments, might still be bad
-						#split out arguments
-						$split = $examine -split " -", 0, "simplematch"
-						$split = $split[0] -split " /", 0, "simplematch"
-						$newpath = $split[0].Trim(" ") #Path minus flagged args
-						if ($newpath.contains(" ")){
-							#check for unflagged argument
-							$eval = $newpath -Replace '".*"', '' #drop all quoted arguments
-							$detunflagged = $eval -split "\", 0, "simplematch" #split on foler delim
-							if ($detunflagged[-1].contains(" ")){ #last elem is executable and any unquoted args
-								$fixarg = $detunflagged[-1] -split " ", 0, "simplematch" #split out args
-								$quoteexe = $fixarg[0] + '"' #quote that EXE and insert it back
-								$examine = $examine.Replace($fixarg[0], $quoteexe)
-								$examine = $examine.Replace($examine, '"' + $examine)
-								$badpath = $true
-							} #end detect unflagged
-							$examine = $examine.Replace($newpath, '"' + $newpath + '"')
-							$badpath = $true
-						} #end if newpath
-						else { #if newpath doesn't have spaces, it was just the argument tripping the check
-							$badpath = $false
-						} #end else
-					} #end if parameter
-					else
-					{#check for unflagged argument
-						$eval = $examine -Replace '".*"', '' #drop all quoted arguments
-						$detunflagged = $eval -split "\", 0, "simplematch"
-						if ($detunflagged[-1].contains(" ")){
-							$fixarg = $detunflagged[-1] -split " ", 0, "simplematch"
-							$quoteexe = $fixarg[0] + '"'
-							$examine = $examine.Replace($fixarg[0], $quoteexe)
-							$examine = $examine.Replace($examine, '"' + $examine)
-							$badpath = $true
-						} #end detect unflagged
-						else
-						{#just a bad path
-							#surround path in quotes
-							$examine = $examine.replace($examine, '"' + $examine + '"')
-							$badpath = $true
-						}#end else
-					}#end else
-				}#end if contains space
-				else { $badpath = $false }
-			} #end if starts with \??
-			else { $badpath = $false }
-		} #end if startswith quote
-		else { $badpath = $false }
+    if ($si.ImagePath -ne $nul) { 
+        $obj = New-Object -Typename PSObject
+        $obj | Add-Member -MemberType NoteProperty -Name Status -Value "Retrieved"
+        # There is certianly a way to use the full path here but for now I trim it until I can find time to play with it
+            $obj | Add-Member -MemberType NoteProperty -Name Key -Value $si.PSPath.TrimStart("Microsoft.PowerShell.Core\Registry::")
+            $obj | Add-Member -MemberType NoteProperty -Name ImagePath -Value $si.ImagePath
+        
+        ########################################################################
+            # Find and Fix Bad Keys for each key object
+            ########################################################################
+        
+        #We're looking for keys with spaces in the path and unquoted
+        $examine = $obj.ImagePath
+        if (!($examine.StartsWith('"'))) { #Doesn't start with a quote
+            if (!($examine.StartsWith("\??"))) { #Some MS Services start with this but don't appear vulnerable
+                if ($examine.contains(" ")) { #If contains space
+                    #when I get here, I can either have a good path with arguments, or a bad path
+                    if ($examine.contains("-") -or $examine.contains("/")) { #found arguments, might still be bad
+                        #split out arguments
+                        $split = $examine -split " -", 0, "simplematch"
+                        $split = $split[0] -split " /", 0, "simplematch"
+                        $newpath = $split[0].Trim(" ") #Path minus flagged args
+                        if ($newpath.contains(" ")){
+                            #check for unflagged argument
+                            $eval = $newpath -Replace '".*"', '' #drop all quoted arguments
+                            $detunflagged = $eval -split "\", 0, "simplematch" #split on foler delim
+                            if ($detunflagged[-1].contains(" ")){ #last elem is executable and any unquoted args
+                                $fixarg = $detunflagged[-1] -split " ", 0, "simplematch" #split out args
+                                $quoteexe = $fixarg[0] + '"' #quote that EXE and insert it back
+                                $examine = $examine.Replace($fixarg[0], $quoteexe)
+                                $examine = $examine.Replace($examine, '"' + $examine)
+                                $badpath = $true
+                            } #end detect unflagged
+                            $examine = $examine.Replace($newpath, '"' + $newpath + '"')
+                            $badpath = $true
+                        } #end if newpath
+                        else { #if newpath doesn't have spaces, it was just the argument tripping the check
+                            $badpath = $false
+                        } #end else
+                    } #end if parameter
+                    else
+                    {#check for unflagged argument
+                        $eval = $examine -Replace '".*"', '' #drop all quoted arguments
+                        $detunflagged = $eval -split "\", 0, "simplematch"
+                        if ($detunflagged[-1].contains(" ")){
+                            $fixarg = $detunflagged[-1] -split " ", 0, "simplematch"
+                            $quoteexe = $fixarg[0] + '"'
+                            $examine = $examine.Replace($fixarg[0], $quoteexe)
+                            $examine = $examine.Replace($examine, '"' + $examine)
+                            $badpath = $true
+                        } #end detect unflagged
+                        else
+                        {#just a bad path
+                            #surround path in quotes
+                            $examine = $examine.replace($examine, '"' + $examine + '"')
+                            $badpath = $true
+                        }#end else
+                    }#end else
+                }#end if contains space
+                else { $badpath = $false }
+            } #end if starts with \??
+            else { $badpath = $false }
+        } #end if startswith quote
+        else { $badpath = $false }
 
-		#Update Objects
-		if ($badpath -eq $false){
-			$obj | Add-Member -MemberType NoteProperty -Name BadKey -Value "No"
-			$obj | Add-Member -MemberType NoteProperty -Name FixedKey -Value "N/A"
-			$obj = $nul #clear $obj
-		}
-			
-		# Plans to change this check. I believe it can be done more efficiently. But It works for now!
-		if ($badpath -eq $true){
-			$obj | Add-Member -MemberType NoteProperty -Name BadKey -Value "Yes"
-			#sometimes we catch doublequotes
-			if ($examine.endswith('""')){ $examine = $examine.replace('""','"') }
-			$obj | Add-Member -MemberType NoteProperty -Name FixedKey -Value $examine
-			if ($obj.badkey -eq "Yes"){
-				#Write-Progress -Activity "Fixing $($obj.key)" -Status "Working..."
-				$regpath = $obj.Fixedkey
-				$obj.status = "Fixed"
-	        		$regkey = $obj.key.replace('HKEY_LOCAL_MACHINE', 'HKLM:')
-	        		# Comment the next line out to run without modifying the registry
-				# Alternatively uncomment any line with Write-Output or Write-Object for extra verbosity.
-				Set-ItemProperty -Path $regkey -name 'ImagePath' -value $regpath
-			}				
-		$obj = $nul #clear $obj
-		}
-	}
-}	
+        #Update Objects
+        if ($badpath -eq $false){
+            $obj | Add-Member -MemberType NoteProperty -Name BadKey -Value "No"
+            $obj | Add-Member -MemberType NoteProperty -Name FixedKey -Value "N/A"
+            $obj = $nul #clear $obj
+        }
+            
+        # Plans to change this check. I believe it can be done more efficiently. But It works for now!
+        if ($badpath -eq $true){
+            $obj | Add-Member -MemberType NoteProperty -Name BadKey -Value "Yes"
+            #sometimes we catch doublequotes
+            if ($examine.endswith('""')){ $examine = $examine.replace('""','"') }
+            $obj | Add-Member -MemberType NoteProperty -Name FixedKey -Value $examine
+            if ($obj.badkey -eq "Yes"){
+                #Write-Progress -Activity "Fixing $($obj.key)" -Status "Working..."
+                $regpath = $obj.Fixedkey
+                $obj.status = "Fixed"
+                    $regkey = $obj.key.replace('HKEY_LOCAL_MACHINE', 'HKLM:')
+                    # Comment the next line out to run without modifying the registry
+                # Alternatively uncomment any line with Write-Output or Write-Object for extra verbosity.
+                Set-ItemProperty -Path $regkey -name 'ImagePath' -value $regpath
+            }               
+        $obj = $nul #clear $obj
+        }
+    }
+}   
 # https://github.com/NetSecJedi/FixUnquotedPaths/blob/master/FixUnquotedPaths.ps1
 
 reg add "HKLM\SOFTWARE\Policies\Microsoft\FVE" /v "RequireTPM" /t REG_DWORD /d 0 /f
@@ -1216,7 +1217,6 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Senso
 Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Services\lfsvc\Service\Configuration" -Name "Status" -Type DWord -Value reg add "HKLM\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" /v "DisablePasswordChange" /t REG_DWORD /d 0 /f
 reg add "HKLM\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" /v "DisablePasswordChange" /t REG_DWORD /d 0 /f
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "PromptOnSecureDesktop" /t REG_DWORD /d 1 /f
-
 
 
 
