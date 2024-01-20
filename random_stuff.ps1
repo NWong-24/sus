@@ -1315,3 +1315,4 @@ bcdedit /set TESTSIGNING OFF
 REG ADD "HKCU\Software\Policies\Microsoft\Windows NT\Driver Signing" /v BehaviorOnFailedVerify /t REG_DWORD /d 2 /f
 reg add "HKLM\Software\Policies\Microsoft\Windows\System" /v DisableHHDEP /t REG_DWORD /d 0 /f
 reg add "HKLM\Software\Policies\Microsoft\Messenger\Client" /v PreventRun /t REG_DWORD /d 1 /f
+reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoStartBanner /t REG_DWORD /d 1 /f
