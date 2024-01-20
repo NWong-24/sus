@@ -1264,3 +1264,54 @@ Invoke-WebRequest -Uri https://raw.githubusercontent.com/NWong-24/sus/main/secpo
 powershell.exe -command "secedit /configure /db C:\Windows\security\local.sdb /cfg secpol.cfg /areas SECURITYPOLICY"
 del secpol.cfg
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v ValidateAdminCodeSignatures /t REG_DWORD /d 1 /f
+# now baldi too
+# List of modules to be removed
+$modulesToRemove = @("PowerSploit", "DSInternals", "Nishang", "Empire", "Mimikatz", "Invoke-Obfuscation", "Powercat", "Invoke-Shellcode")
+
+# Loop through each module and uninstall it
+foreach ($moduleName in $modulesToRemove) {
+    try {
+        Uninstall-Module -Name $moduleName -Force -ErrorAction Stop
+        Write-Host "Module $moduleName has been successfully removed."
+    } catch {
+        Write-Host "Failed to remove module $moduleName. Error: $_"
+    }
+}
+
+$additionalModulesToRemove = @("Veil", "CrackMapExec", "UnmanagedPowerShell", "LaZagne", "ReconDog", "Invoke-Phant0m", "Invoke-CradleCrafter", "Sherlock", "PowerUpSQL")
+
+foreach ($moduleName in $additionalModulesToRemove) {
+    try {
+        Uninstall-Module -Name $moduleName -Force -ErrorAction Stop
+        Write-Host "Module $moduleName has been successfully removed."
+    } catch {
+        Write-Host "Failed to remove module $moduleName. Error: $_"
+    }
+}
+Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows NT\DiskQuota" -Name "ApplyToRemovableMedia" -Value 1
+Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows NT\DiskQuota" -Name "Enable" -Value 0
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "NtfsDisableLastAccessUpdate" -Value 1
+
+#saving time 
+$user = $env:USERNAME
+$baseDirectory = "C:\Users"
+
+# Get all directories under C:\Users
+$directories = Get-ChildItem -Path $baseDirectory -Directory -Recurse
+
+# Loop through each directory and grant full control to the specified user
+foreach ($directory in $directories) {
+    try {
+        $acl = Get-Acl $directory.FullName
+        $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($user, "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+        $acl.SetAccessRule($rule)
+        Set-Acl -Path $directory.FullName -AclObject $acl
+        Write-Host "Full control granted to $user on $($directory.FullName)"
+    } catch {
+        Write-Host "Failed to grant full control on $($directory.FullName). Error: $_"
+    }
+}
+bcdedit /set TESTSIGNING OFF
+REG ADD "HKCU\Software\Policies\Microsoft\Windows NT\Driver Signing" /v BehaviorOnFailedVerify /t REG_DWORD /d 2 /f
+reg add "HKLM\Software\Policies\Microsoft\Windows\System" /v DisableHHDEP /t REG_DWORD /d 0 /f
+reg add "HKLM\Software\Policies\Microsoft\Messenger\Client" /v PreventRun /t REG_DWORD /d 1 /f
