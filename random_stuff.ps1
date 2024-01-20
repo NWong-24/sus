@@ -585,6 +585,9 @@ Set-NetFirewallProfile -All -EnableStealthModeForIPsec True
 Set-NetFirewallProfile -All -DisabledInterfaceAliases NotConfigured
 Set-NetFirewallProfile -All -AllowUnicastResponseToMulticast True 
 
+$password123 = "password123"
+$securePassword = ConvertTo-SecureString -String $password123 -AsPlainText -Force
+Get-ADUser | Set-ADAccountPassword -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "password123" -Force)
 net accounts /minpwlen:14
 net accounts /maxpwage:59
 net accounts /minpwage:2
