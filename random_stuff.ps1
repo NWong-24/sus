@@ -375,6 +375,16 @@ Set-ProcessMitigation -System -Enable BottomUp,HighEntropy
 Set-ProcessMitigation -System -Enable SEHOP,SEHOPTelemetry 
 Set-ProcessMitigation -System -Enable TerminateOnError
 
+net accounts /minpwlen:0
+
+Get-LocalUser | ForEach-Object {
+    $newPassword = "password"  # Replace with your desired password
+    $securePassword = ConvertTo-SecureString -String $newPassword -AsPlainText -Force
+    Set-LocalUser -Name $_.Name -PasswordNeverExpires $false -Password $securePassword
+}
+net accounts /minpwlen:14
+
+
 
 # WINDOWS AUTO UPDATES
 $WUSettings = (New-Object -ComObject Microsoft.Update.AutoUpdate).Settings
@@ -497,7 +507,6 @@ reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v "SitePerProcess" /t REG_DWORD 
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v "TLS13HardeningForLocalAnchorsEnabled" /t REG_DWORD /d 1 /f
 reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v "VideoCaptureAllowed" /t REG_DWORD /d 0 /f
 
-
 # I'm losing my sanity
 
 reg add "HKLM\System\CurrentControlSet\Services\NTDS\Parameters" /v "LDAPServerIntegrity" /t REG_DWORD /d 1 /f
@@ -520,15 +529,9 @@ reg add "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" /v "IncludeR
 reg add  "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "DisallowCpl" /t REG_DWORD /d 0 /f
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\CrashControl" /v "CrashDumpEnabled" /t REG_DWORD /d 0 /f
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Advanced Threat Protection" /v "ForceDefenderPassiveMode" /t REG_DWORD /d 0 /f
-
-
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Printers\PointAndPrint" /v "RestrictDriverInstallationToAdministrators" /t REG_DWORD /d 1 /f
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Advanced Threat Protection" /v "ForceDefenderPassiveMode" /t REG_DWORD /d 0 /f
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Advanced Threat Protection" /v "ForceDefenderPassiveMode" /t REG_DWORD /d 0 /f
-
-
-
-
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\System" /v "DisableLockScreenAppNotifications" /t REG_DWORD /d 1 /f
 Import-Module ActiveDirectory
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers" /v "DisableAutoplay" /t REG_DWORD /d 1 /f
@@ -557,9 +560,6 @@ foreach ($profile in $profiles) {
     }
     New-ItemProperty -Path $path -Name AllowLocalIPsecPolicyMerge -Value 0
 }
-
-
-
 
 # Configure Firewall Logging
 $fwLogPath = "C:\Windows\System32\LogFiles\Firewall\pfirewall.log"
@@ -610,8 +610,10 @@ Set-ProcessMitigation -System -Enable ForceRelocateImages
 Set-ProcessMitigation -System -Enable BottomUp,HighEntropy
 Set-ProcessMitigation -System -Enable SEHOP,SEHOPTelemetry 
 Set-ProcessMitigation -System -Enable TerminateOnError
-Get-LocalUser -Filter * | Set-LocalUser -PasswordNeverExpires $false
-Get-LocalUser -Filter * | Set-LocalUser -AccountNeverExpires $true
+
+
+Get-LocalUser | Set-LocalUser -PasswordNeverExpires $false
+Get-LocalUser | Set-LocalUser -AccountNeverExpires $true
 Get-ADUser -Filter * -properties sidhistory | foreach {Set-ADUser $_ -remove @{sidhistory=$_.sidhistory.value}}
 reg add "HKLM\Software\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" /v "EnableScriptBlockLogging" /t REG_DWORD /d 255 /f
 reg add "HKLM\Software\Policies\Microsoft\Microsoft Antimalware\Real-Time Protection" /v "LocalSettingOverrideDisableOnAccessProtection" /t REG_DWORD /d 0 /f
@@ -1095,7 +1097,11 @@ reg add "HKLM\SYSTEM\CurrentControlSet\Services\XboxGipSvc" /v Start /t REG_DWOR
 reg add "HKLM\SYSTEM\CurrentControlSet\Services\XblAuthManager" /v Start /t REG_DWORD /d 4 /f
 reg add "HKLM\SYSTEM\CurrentControlSet\Services\XblGameSave" /v Start /t REG_DWORD /d 4 /f
 reg add "HKLM\SYSTEM\CurrentControlSet\Services\XboxNetApiSvc" /v Start /t REG_DWORD /d 4 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\EventLog" /v Start /t REG_DWORD /d 2 /f
+sc.exe config eventlog start= auto
+
 Set-ExecutionPolicy Bypass -Scope Process
+Start-Service EventLog
 #unchecked code, no time to test
 $result = Get-ChildItem 'HKLM:\SYSTEM\CurrentControlSet\Services'
 $ServiceItems = $result | Foreach-Object {Get-ItemProperty $_.PsPath}
@@ -1218,12 +1224,38 @@ Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Services\lfsvc\Service\Co
 reg add "HKLM\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" /v "DisablePasswordChange" /t REG_DWORD /d 0 /f
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "PromptOnSecureDesktop" /t REG_DWORD /d 1 /f
 
+#LGPO TIME BABY
 
+#https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_STIG_GPO_Package_October_2023.zip
+#stupid ssl/tls error so im using a google drive direct download link
+Invoke-WebRequest -OutFile DISA_STIGS.zip -Uri "http://drive.google.com/uc?export=download&id=1htu1de8nABGOk0B1fn6IZWaUkw8xL7nW"
+Invoke-WebRequest -OutFile LGPO.zip -Uri "https://github.com/rootsecdev/Microsoft-Blue-Forest/raw/master/Security%20Baselines/LGPO.zip"
+Expand-Archive -Path LGPO.zip -DestinationPath LGPO -Force
+Expand-Archive -Path DISA_STIGS.zip -DestinationPath DISA_STIGS -Force
+Move-Item .\LGPO\LGPO.exe .\LGPO.exe
+del LGPO -Recurse
+del LGPO.zip
+.\LGPO.exe /g ".\DISA_STIGS\DoD Windows Defender Firewall v2r2\GPOs\{EB82B913-90A2-4599-A554-90B3A116B382}" /v
+.\LGPO.exe /g ".\DISA_STIGS\DoD Windows 10 v2r8\GPOs\{D44AA262-F641-4083-87B1-1BC05572792D}" /v
+.\LGPO.exe /g ".\DISA_STIGS\DoD Windows 10 v2r8\GPOs\{876C5A1E-7050-4D3F-9FA5-99E9B31BF80E}" /v
+.\LGPO.exe /g ".\DISA_STIGS\DoD WinSvr 2022 MS and DC v1r4\GPOs\{0868DCD3-069B-4027-89A9-995435DC3064}" /v
+.\LGPO.exe /g ".\DISA_STIGS\DoD WinSvr 2022 MS and DC v1r4\GPOs\{46680758-56F4-4673-9D15-1AF560115185}" /v
+.\LGPO.exe /g ".\DISA_STIGS\DoD Microsoft Defender Antivirus STIG v2r4\GPOs\{1733BFC6-8E8E-41F7-BB76-EB2070330C89}" /v
+.\LGPO.exe /g ".\DISA_STIGS\DoD Mozilla Firefox v6r5\GPOs\{F1176AFA-BA81-47FB-A41E-5CDE92DA0EF4}" /v
 
+$chrometest = Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe'
 
+if($chrometest -eq $true){
+   Write-Host "Chrome is installed"
+   $Path = $env:TEMP;
+    $Installer = "chrome_installer.exe";
+    Invoke-WebRequest "http://dl.google.com/chrome/install/latest/chrome_installer.exe" -OutFile $Path\$Installer;
+    Start-Process -FilePath $Path\$Installer -Args "/silent /install" -Verb RunAs -Wait;
+    Remove-Item $Path\$Installer
+    .\LGPO.exe /g ".\DISA_STIGS\DoD Google Chrome v2r8\GPOs\{0FBEE738-6902-4E7E-8E79-9A0B1B2668B9}" /v
+} else {
+   Write-Host "Chrome is not installed"
+}
 
-
-
-
-
-
+# harambe made me insane
+reg add "HKLM\Software\Policies\Microsoft\Windows Defender\Real-Time Protection" /v "DisableRealTimeMonitoring" /t REG_DWORD /d 0 /f
