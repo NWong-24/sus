@@ -66,8 +66,7 @@ Else {
 If (((Get-ItemProperty "HKLM:\Software\Policies\Microsoft\Windows\Installer").AlwaysInstallElevated) -eq 1) {
 
     Write-Output "[*] Device is vulnerable to AlwaysInstallElevated priviliege escalation. Mitigating threat. Read more here if desired: https://docs.microsoft.com/en-us/windows/win32/msi/alwaysinstallelevated"
-    Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\Installer" -Name "AlwaysInstallElevated" -Value 0
-    Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\Installer" -Name "AlwaysInstallElevated" -Value 0
+    reg add "HKLM\Software\Policies\Microsoft\Windows\Installer" /v "AlwaysInstallElevated" /t REG_DWORD /d 0 /f
 
 }  # End If
 Else {
@@ -1235,6 +1234,7 @@ Expand-Archive -Path DISA_STIGS.zip -DestinationPath DISA_STIGS -Force
 Move-Item .\LGPO\LGPO.exe .\LGPO.exe
 del LGPO -Recurse
 del LGPO.zip
+<#
 .\LGPO.exe /g ".\DISA_STIGS\DoD Windows Defender Firewall v2r2\GPOs\{EB82B913-90A2-4599-A554-90B3A116B382}" /v
 .\LGPO.exe /g ".\DISA_STIGS\DoD Windows 10 v2r8\GPOs\{D44AA262-F641-4083-87B1-1BC05572792D}" /v
 .\LGPO.exe /g ".\DISA_STIGS\DoD Windows 10 v2r8\GPOs\{876C5A1E-7050-4D3F-9FA5-99E9B31BF80E}" /v
@@ -1242,7 +1242,7 @@ del LGPO.zip
 .\LGPO.exe /g ".\DISA_STIGS\DoD WinSvr 2022 MS and DC v1r4\GPOs\{46680758-56F4-4673-9D15-1AF560115185}" /v
 .\LGPO.exe /g ".\DISA_STIGS\DoD Microsoft Defender Antivirus STIG v2r4\GPOs\{1733BFC6-8E8E-41F7-BB76-EB2070330C89}" /v
 .\LGPO.exe /g ".\DISA_STIGS\DoD Mozilla Firefox v6r5\GPOs\{F1176AFA-BA81-47FB-A41E-5CDE92DA0EF4}" /v
-
+#>
 $chrometest = Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe'
 
 if($chrometest -eq $true){
@@ -1259,3 +1259,8 @@ if($chrometest -eq $true){
 
 # harambe made me insane
 reg add "HKLM\Software\Policies\Microsoft\Windows Defender\Real-Time Protection" /v "DisableRealTimeMonitoring" /t REG_DWORD /d 0 /f
+auditpol /set /category:* /success:enable /failure:enable
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/NWong-24/sus/main/secpol.cfg -OutFile secpol.cfg
+powershell.exe -command "secedit /configure /db C:\Windows\security\local.sdb /cfg secpol.cfg /areas SECURITYPOLICY"
+del secpol.cfg
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v ValidateAdminCodeSignatures /t REG_DWORD /d 1 /f
